@@ -11,6 +11,7 @@
 #include "Camera.h"
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 Camera *cameraptr;
 
@@ -64,20 +65,27 @@ int main(void)
     glm::mat4 model = glm::mat4(1.0f);
     Renderer::SetUniform("u_Model", model);
 
+    float lastFrame = 0.0f;
     
     glfwSwapInterval(1);
     glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetKeyCallback(window, keyboard_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
-        
+        /* Poll for and process events */
+        glfwPollEvents();
         
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        cameraptr->Update(view);
+        float currentFrame = glfwGetTime();
+        float deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
+        cameraptr->Update(view, deltaTime);
         Renderer::SetUniform("u_View", view);
 
         model = glm::rotate(model, 0.1f, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -91,8 +99,6 @@ int main(void)
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
-        /* Poll for and process events */
-        glfwPollEvents();
     }
 
     Renderer::Shutdown();
@@ -104,3 +110,17 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
     cameraptr->SetFrontByCursor(xpos, ypos);
 }
+
+void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_W && action == GLFW_REPEAT) {
+        cameraptr->SetVelocity({0.0f, 0.0f, 1.0f});
+    } else if (key == GLFW_KEY_A && action == GLFW_REPEAT) {
+        cameraptr->SetVelocity({1.0f, 0.0f, 0.0f});
+    } else if (key == GLFW_KEY_S && action == GLFW_REPEAT) {
+        cameraptr->SetVelocity({0.0f, 0.0f, -1.0f});
+    } else if (key == GLFW_KEY_D && action == GLFW_REPEAT) {
+        cameraptr->SetVelocity({-1.0f, 0.0f, 0.0f});
+    }
+}
+    

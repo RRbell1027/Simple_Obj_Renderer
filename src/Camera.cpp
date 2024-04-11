@@ -1,6 +1,7 @@
-
+#include <GLFW/glfw3.h>
 #include "glm/gtc/matrix_transform.hpp"
 #include "Camera.h"
+#include <stdio.h>
 
 Camera::Camera()
 {
@@ -17,6 +18,7 @@ void Camera::SetFrontByCursor(double xpos, double ypos)
         lastX = xpos;
         lastY = ypos;
         first = true;
+        rotate.x = -90.0f;
     }
     float sensitivity = 0.1f;
 
@@ -39,7 +41,24 @@ void Camera::SetFrontByCursor(double xpos, double ypos)
     front = glm::normalize(front);
 }
 
-void Camera::Update(glm::mat4 & view)
+void Camera::SetVelocity(glm::vec3 vf)
 {
+    float sensitivity = 10.0f;
+
+    // seem as transposed.
+    glm::mat3 rotationMat = {
+        front.z,       0, -front.x,
+              0,       0,        0,
+        front.x, front.y,  front.z
+    };
+
+    velocity = glm::normalize(rotationMat * vf) * sensitivity;
+}
+
+
+void Camera::Update(glm::mat4 & view, float deltaTime)
+{
+    position += velocity * deltaTime;
+    velocity = {0.0f, 0.0f, 0.0f};
     view = glm::lookAt(position, position + front, up);
 }
