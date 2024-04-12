@@ -16,6 +16,7 @@ struct Vertex {
     glm::vec3 Position;
     glm::vec2 TexCoord;
     glm::vec3 Normal;
+    glm::mat4 Model;
 };
 
 struct ShaderProgramSource {
@@ -59,6 +60,18 @@ void Renderer::Init()
 
     GLCall(glEnableVertexArrayAttrib(renderer.va, 2));
     GLCall(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, Normal)));
+
+    GLCall(glEnableVertexArrayAttrib(renderer.va, 3));
+    GLCall(glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, Model)));
+
+    GLCall(glEnableVertexArrayAttrib(renderer.va, 4));
+    GLCall(glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)(offsetof(Vertex, Model) + 4 * sizeof(float))));
+
+    GLCall(glEnableVertexArrayAttrib(renderer.va, 5));
+    GLCall(glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)(offsetof(Vertex, Model) + 8 * sizeof(float))));
+
+    GLCall(glEnableVertexArrayAttrib(renderer.va, 6));
+    GLCall(glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)(offsetof(Vertex, Model) + 12 * sizeof(float))));
 
     // IndexBuffer
     int IndexBuffer[MAX_INDEX_COUNT];
@@ -115,33 +128,36 @@ void Renderer::Flush()
     renderer.TextureSlotsTop = 1;
 }
 
-static inline void BufferPushBack(Object &object, int i)
+static inline void BufferPushBack(Object & object, int i)
 {
-    int vi = object.f_buffer[i] - 1; 
+    ObjectLoader * loader = object.objectLoader;
+    int vi = loader->f_buffer[i] - 1; 
     renderer.VertexBuffer[renderer.VertexCount].Position = 
-        glm::vec3(object.v_buffer[vi * 3], object.v_buffer[vi * 3 + 1], object.v_buffer[vi * 3 + 2]);
+        glm::vec3(loader->v_buffer[vi * 3], loader->v_buffer[vi * 3 + 1], loader->v_buffer[vi * 3 + 2]);
 
-    int vti = object.f_buffer[i+1] - 1;
+    int vti = loader->f_buffer[i+1] - 1;
     renderer.VertexBuffer[renderer.VertexCount].TexCoord = 
-        glm::vec2(object.vt_buffer[vti * 2], object.vt_buffer[vti * 2 + 1]);
+        glm::vec2(loader->vt_buffer[vti * 2], loader->vt_buffer[vti * 2 + 1]);
 
-    int vni = object.f_buffer[i+2] - 1;
+    int vni = loader->f_buffer[i+2] - 1;
     renderer.VertexBuffer[renderer.VertexCount].Normal =
-        glm::vec3(object.vn_buffer[vni * 3], object.vn_buffer[vni * 3 + 1], object.vn_buffer[vni * 3 + 2]);
+        glm::vec3(loader->vn_buffer[vni * 3], loader->vn_buffer[vni * 3 + 1], loader->vn_buffer[vni * 3 + 2]);
+
+    renderer.VertexBuffer[renderer.VertexCount].Model = object.model;
 
     renderer.VertexCount++;
 }
 
 void Renderer::DrawObject(Object &object)
 {
-
-    for (int i = 0; i < object.f_buffer.size(); i += 12) {
+    ObjectLoader * loader = object.objectLoader;
+    for (int i = 0; i < loader->f_buffer.size(); i += 12) {
         if (renderer.VertexCount + 6 > MAX_VERTEX_COUNT) {
             EndBatch();
             Flush();
             BeginBatch();
         }
-        if (object.f_buffer[i+9] == 0) {
+        if (loader->f_buffer[i+9] == 0) {
             BufferPushBack(object, i);
             BufferPushBack(object, i+3);
             BufferPushBack(object, i+6);

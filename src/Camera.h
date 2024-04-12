@@ -7,7 +7,11 @@ class Camera {
     Camera();
     void SetFrontByCursor(double xpos, double ypos);
     void SetVelocity(glm::vec3 v);
-    void Update(glm::mat4 & view, float deltaTime);
+    void Update(float deltaTime);
+
+    glm::mat4 projection;
+    glm::mat4 view;
+
     private:
     glm::vec3 front;
     glm::vec3 rotate;

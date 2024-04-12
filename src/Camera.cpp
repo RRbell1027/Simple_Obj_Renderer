@@ -1,10 +1,12 @@
-#include <GLFW/glfw3.h>
 #include "glm/gtc/matrix_transform.hpp"
 #include "Camera.h"
 #include <stdio.h>
 
 Camera::Camera()
 {
+    projection = glm::perspective(glm::radians(45.0f), 15.0f / 12.0f, -2.0f, 2.0f);
+    view = glm::mat4(1.0f);
+
     position = glm::vec3(0.0f, 0.0f, 10.0f);
     front = glm::vec3(0.0f, 0.0f, -1.0f);
     up = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -56,7 +58,7 @@ void Camera::SetVelocity(glm::vec3 vf)
 }
 
 
-void Camera::Update(glm::mat4 & view, float deltaTime)
+void Camera::Update(float deltaTime)
 {
     position += velocity * deltaTime;
     velocity = {0.0f, 0.0f, 0.0f};

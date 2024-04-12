@@ -2,9 +2,11 @@
 #include <sstream>
 #include <iostream>
 
+#include "glm/gtc/matrix_transform.hpp"
+
 #include "ObjLoader.h"
 
-Object::Object(const std::string &filepath)
+ObjectLoader::ObjectLoader(const std::string &filepath)
 {
     std::ifstream stream(filepath);
     if (!stream) {
@@ -53,12 +55,7 @@ Object::Object(const std::string &filepath)
     }
 }
 
-void Object::Show()
+void Object::Update(float deltaTime)
 {
-    std::cout << "index" << std::endl;
-    for (int i = 0; i < f_buffer.size(); i += 12) {
-        for (int j = i; j < 12; j += 3)
-            std::cout << f_buffer[j] << "/" << f_buffer[j + 1] << "/" << f_buffer[j + 2] << " ";
-        std::cout << '\n';
-    }
+    model = glm::rotate(model, 0.1f, glm::vec3(0.0f, 1.0f, 0.0f)); 
 }

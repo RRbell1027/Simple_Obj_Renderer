@@ -48,22 +48,17 @@ int main(void)
 
     Renderer::Init();
 
-    Object suzanne("../asset/suzanne.obj");
+    std::vector<Object> objects;
+
+    ObjectLoader suzanne("../asset/suzanne.obj");
+    objects.push_back(Object(glm::mat4(1.0f), &suzanne));
+    objects.push_back(Object(glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 0.0f)), &suzanne));
 
     Renderer::CompileShader("../shader/basic.shader");
     Renderer::SetShader();
-    
-
-    // glm::mat4 projection = glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, -2.0f, 2.0f);
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), 15.0f / 12.0f, -2.0f, 2.0f);
-    Renderer::SetUniform("u_Proj", projection);
 
     Camera camera;
     cameraptr = &camera;
-    glm::mat4 view = glm::mat4(1.0f);
-    
-    glm::mat4 model = glm::mat4(1.0f);
-    Renderer::SetUniform("u_Model", model);
 
     float lastFrame = 0.0f;
     
@@ -81,21 +76,26 @@ int main(void)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        /* Calculate deltaTime */
         float currentFrame = glfwGetTime();
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        cameraptr->Update(view, deltaTime);
-        Renderer::SetUniform("u_View", view);
+        /* Update every components */
+        cameraptr->Update(deltaTime);
+        Renderer::SetUniform("u_Proj", cameraptr->projection);
+        Renderer::SetUniform("u_View", cameraptr->view);
 
-        model = glm::rotate(model, 0.1f, glm::vec3(0.0f, 1.0f, 0.0f));
-        Renderer::SetUniform("u_Model", model);
+        for (int i = 0; i < objects.size(); i++) {
 
-        Renderer::BeginBatch();
-        Renderer::DrawObject(suzanne);
-        Renderer::EndBatch();
+            objects[i].Update(deltaTime);
+            
+            Renderer::BeginBatch();
+            Renderer::DrawObject(objects[i]);
+            Renderer::EndBatch();
 
-        Renderer::Flush();
+            Renderer::Flush();
+        }
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);

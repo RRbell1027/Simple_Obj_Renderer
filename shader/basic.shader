@@ -4,15 +4,20 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec2 texCoord;
 layout(location = 2) in vec3 vertexNormal;
 
+layout(location = 3) in vec4 m1;
+layout(location = 4) in vec4 m2;
+layout(location = 5) in vec4 m3;
+layout(location = 6) in vec4 m4;
+
 uniform mat4 u_View;
 uniform mat4 u_Proj;
-uniform mat4 u_Model;
 
 out vec3 o_Normal;
 
 void main()
 {
-   gl_Position = u_Proj * u_View * u_Model * vec4(position, 1.0);
+   mat4 model = mat4(m1, m2, m3, m4);
+   gl_Position = u_Proj * u_View * model * vec4(position, 1.0);
    o_Normal = vertexNormal;
 };
 
